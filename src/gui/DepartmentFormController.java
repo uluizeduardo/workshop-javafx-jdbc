@@ -1,6 +1,7 @@
 package gui;
 
 import db.DbException;
+import gui.listeners.DataChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -8,7 +9,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import model.dao.DepartmentDao;
 import model.entities.Department;
 import model.services.DepartmentService;
 import util.Alerts;
@@ -16,6 +16,8 @@ import util.Constraints;
 import util.Utils;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class DepartmentFormController implements Initializable {
@@ -23,6 +25,8 @@ public class DepartmentFormController implements Initializable {
     private Department entity;
 
     private DepartmentService service;
+
+    private List<DataChangeListener> dataChangeListeners = new ArrayList<>();
 
     @FXML
     private TextField textId;
@@ -47,6 +51,9 @@ public class DepartmentFormController implements Initializable {
         this.service = service;
     }
 
+    public void subscribeDataChangeListener(DataChangeListener listener){
+        dataChangeListeners.add(listener);
+    }
     @FXML
     private void onBtSaveAction(ActionEvent event){
         if (entity == null){
@@ -57,10 +64,17 @@ public class DepartmentFormController implements Initializable {
         try {
             entity = getFormData();
             service.seveOrUpdate(entity);
+            notifyDataChengeListeners();
             Utils.currentStage(event).close();
         }
         catch (DbException ex){
             Alerts.showAlert("Error saving object", null, ex.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void notifyDataChengeListeners() {
+        for (DataChangeListener listener : dataChangeListeners){
+            listener.onDataChanged();
         }
     }
 
