@@ -14,4 +14,14 @@ public class DepartmentService {
     public List<Department> findAll(){
         return dao.findAll();
     }
+
+    //Método para salvar dados no DB
+    public void seveOrUpdate(Department obj){
+        if (obj.getId() == null){
+            dao.insert(obj);
+        }
+        else {
+            dao.update(obj);
+        }
+    }
 }
